@@ -1,13 +1,51 @@
 package controller
 
 import (
+	"database/sql"
 	"html/template"
 	"net/http"
 	"path/filepath"
 )
 
-func NewIndexEmployeController() func(w http.ResponseWriter, r *http.Request) {
+type Employe struct {
+	Id, Name, Npwp, Address string
+}
+
+func NewIndexEmployeController(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		rows, err := db.Query("SELECT id, name, npwp, address from employe")
+
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			w.WriteHeader(http.StatusInternalServerError)
+
+			return
+		}
+
+		defer rows.Close()
+
+		var employees []Employe
+
+		for rows.Next() {
+			var employe Employe
+
+			err = rows.Scan(
+				&employe.Id,
+				&employe.Name,
+				&employe.Npwp,
+				&employe.Address,
+			)
+
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				w.WriteHeader(http.StatusInternalServerError)
+
+				return
+			}
+			employees = append(employees, employe)
+		}
+
 		fp := filepath.Join("views", "index.html")
 
 		tmpl, err := template.ParseFiles(fp)
@@ -19,7 +57,10 @@ func NewIndexEmployeController() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = tmpl.Execute(w, nil)
+		data := make(map[string]any)
+		data["employees"] = employees
+
+		err = tmpl.Execute(w, data)
 
 		if err != nil {
 			w.Write([]byte(err.Error()))
