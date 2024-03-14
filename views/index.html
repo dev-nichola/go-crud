@@ -30,6 +30,7 @@
             <td>Nama</td>
             <td>Npwp</td>
             <td>Address</td>
+            <td>Action</td>
           </tr>
         </thead>
         <tbody>
@@ -38,6 +39,10 @@
             <td>{{ $employee.Name }}</td>
             <td>{{ $employee.Npwp }}</td>
             <td>{{ $employee.Address }}</td>
+            <td>
+                  <a href="/employe/update?id={{ $employee.Id }}" class="btn btn-warning">Edit</a>
+                  <a href="/employe/delete?id={{ $employee.Id }}" class="btn btn-danger">Delete</a>
+            </td>
           </tr>
           {{ end }}
         </tbody>
